@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ import java.util.List;
  */
 @Data
 @TableName("sys_menu")
-public class SysMenuEntity implements Serializable {
+public class SysMenuEntity implements Serializable,Comparable<SysMenuEntity> {
 	private static final long serialVersionUID = 1L;
 	
 	/**
@@ -80,6 +81,10 @@ public class SysMenuEntity implements Serializable {
 	private Boolean open;
 
 	@TableField(exist=false)
-	private List<?> list;
+	private List<SysMenuEntity> list=new ArrayList<>();
 
+	@Override
+	public int compareTo(SysMenuEntity o) {
+		return this.getOrderNum()-o.getOrderNum();
+	}
 }
