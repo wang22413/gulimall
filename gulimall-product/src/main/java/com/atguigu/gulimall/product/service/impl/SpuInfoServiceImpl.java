@@ -1,10 +1,15 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.common.to.SkuReductionTo;
 import com.atguigu.common.to.SpuBoundTo;
+import com.atguigu.common.to.es.SkuEsModel;
+import com.atguigu.common.to.es.SkuHasStockVo;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.product.entity.*;
 import com.atguigu.gulimall.product.feign.CouponFeignService;
+import com.atguigu.gulimall.product.feign.SearchFeignService;
+import com.atguigu.gulimall.product.feign.WareFeignService;
 import com.atguigu.gulimall.product.service.*;
 import com.atguigu.gulimall.product.vo.*;
 import org.apache.commons.lang.StringUtils;
@@ -13,9 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -54,6 +57,18 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     CouponFeignService couponFeignService;
+
+    @Autowired
+    BrandService brandService;
+
+    @Autowired
+    CategoryService categoryService;
+
+    @Autowired
+    WareFeignService wareFeignService;
+
+    @Autowired
+    SearchFeignService searchFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -147,7 +162,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     return imagesEntity;
                 }).filter(item-> !StringUtils.isEmpty(item.getImgUrl())).collect(Collectors.toList());
                 //6.2)sku的图片信息 pms_sku_images
-                // TODO 没有路径的图片不能保存
                 skuImagesService.saveBatch(imagesEntityList);
 
                 //6.3)sku的销售属性信息 pms_sku_sale_attr_value
@@ -210,6 +224,72 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public void up(Long spuId) {
+        List<SkuInfoEntity> skus = skuInfoService.getSkuBySpuId(spuId);
+        List<Long> skuIds = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
+
+        List<ProductAttrValueEntity> valueEntities = valueService.baseAttrlistforspu(spuId);
+        List<Long> attrIds = valueEntities.stream().map(valueEntitie -> {
+            return valueEntitie.getAttrId();
+        }).collect(Collectors.toList());
+
+        List<Long> searchAttrIds = attrService.selectSearchAttrIds(attrIds);
+        Set<Long> idSet = new HashSet<>(searchAttrIds);
+
+        List<SkuEsModel.Attrs> attrsList = valueEntities.stream().filter(item ->
+                idSet.contains(item.getId())).map(item -> {
+            SkuEsModel.Attrs attrs = new SkuEsModel.Attrs();
+            BeanUtils.copyProperties(item, attrs);
+            return attrs;
+        }).collect(Collectors.toList());
+
+        Map<Long, Boolean> stockMap =null;
+
+        try {
+            R<List<SkuHasStockVo>> skusHasStock = wareFeignService.getSkusHasStock(skuIds);
+            stockMap = skusHasStock.getDate().stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getHasStock()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Map<Long, Boolean> finalStockMap = stockMap;
+        List<SkuEsModel> collect = skus.stream().map(sku -> {
+            SkuEsModel spuEsModel = new SkuEsModel();
+            BeanUtils.copyProperties(sku, spuEsModel);
+
+            spuEsModel.setSkuPrice(sku.getPrice());
+            spuEsModel.setSkuImg(sku.getSkuDefaultImg());
+
+            if (finalStockMap == null) {
+                spuEsModel.setHasStock(true);
+            } else {
+                spuEsModel.setHasStock(finalStockMap.get(sku.getSkuId()));
+            }
+
+            spuEsModel.setHotScore(0L);
+
+            BrandEntity brand = brandService.getById(spuEsModel.getBrandId());
+            spuEsModel.setBrandName(brand.getName());
+            spuEsModel.setBrandImg(brand.getLogo());
+
+            CategoryEntity category = categoryService.getById(spuEsModel.getCatalogId());
+            spuEsModel.setCatalogName(category.getName());
+
+            spuEsModel.setAttrs(attrsList);
+
+            return spuEsModel;
+        }).collect(Collectors.toList());
+
+        R r = searchFeignService.productStatusUp(collect);
+        if (r.getCode() == 0) {
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusMenu.SPU_UP.getCode());
+        } else {
+
+        }
+
     }
 
 
