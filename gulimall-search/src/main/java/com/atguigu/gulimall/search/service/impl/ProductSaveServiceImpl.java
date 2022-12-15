@@ -47,7 +47,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
         boolean b = bulk.hasFailures();
         List<String> collect = Arrays.stream(bulk.getItems()).map(item -> item.getId()).collect(Collectors.toList());
 
-        log.info("商品上架完成{}",collect);
+        log.info("商品上架完成:{},错误信息：{}",collect,bulk.toString());
 
         return b;
 

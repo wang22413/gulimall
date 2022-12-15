@@ -35,7 +35,7 @@ public class ElasticSaveController {
             log.error("ProductSaveService商品上架错误:"+e);
             return R.error(BizCodeEnum.PEODUCT_UP_EXCEPTION.getCode(),BizCodeEnum.PEODUCT_UP_EXCEPTION.getMsg());
         }
-        if (aBoolean) {
+        if (!aBoolean) {
             return R.ok();
         } else {
             return R.error(BizCodeEnum.PEODUCT_UP_EXCEPTION.getCode(),BizCodeEnum.PEODUCT_UP_EXCEPTION.getMsg());
