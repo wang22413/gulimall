@@ -1,21 +1,18 @@
 package com.atguigu.gulimall.product.app;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-//import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.atguigu.common.utils.PageUtils;
+import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.product.entity.ProductAttrValueEntity;
+import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.ProductAttrValueService;
 import com.atguigu.gulimall.product.vo.AttrRespVo;
 import com.atguigu.gulimall.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.atguigu.gulimall.product.service.AttrService;
-import com.atguigu.common.utils.PageUtils;
-import com.atguigu.common.utils.R;
-
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**

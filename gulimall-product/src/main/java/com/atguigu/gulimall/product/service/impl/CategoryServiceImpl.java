@@ -1,22 +1,27 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.atguigu.common.utils.PageUtils;
+import com.atguigu.common.utils.Query;
+import com.atguigu.gulimall.product.dao.CategoryDao;
+import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
+import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.atguigu.common.utils.PageUtils;
-import com.atguigu.common.utils.Query;
+import com.sun.org.apache.bcel.internal.generic.RETURN;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.stereotype.Service;
 
-import com.atguigu.gulimall.product.dao.CategoryDao;
-import com.atguigu.gulimall.product.entity.CategoryEntity;
-import com.atguigu.gulimall.product.service.CategoryService;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Service("categoryService")
@@ -24,6 +29,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     CategoryBrandRelationService categoryBrandRelationService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -85,16 +93,61 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Override
     public Map<String, List<Catelog2Vo>> getCatalogJson() {
+        String catalogJson = redisTemplate.opsForValue().get("catalogJson");
+        if (StringUtils.isEmpty(catalogJson)) {
+            Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDbWithRedisLock();
+            return catalogJsonFromDb;
+        }
+        Map<String, List<Catelog2Vo>> result = JSON.parseObject(catalogJson,new TypeReference<Map<String, List<Catelog2Vo>>>(){});
+        return result;
+    }
+
+    public Map<String, List<Catelog2Vo>> getCatalogJsonFromDbWithRedisLock() {
+        String uuid = UUID.randomUUID().toString();
+        Boolean aBoolean = redisTemplate.opsForValue().setIfAbsent("lock", uuid,300,TimeUnit.SECONDS);
+        if (aBoolean) {
+            Map<String, List<Catelog2Vo>> catalogJsonFromDb;
+            try {
+                catalogJsonFromDb = getCatalogJsonFromDb();
+            } finally {
+                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+                redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), uuid);
+            }
+            return catalogJsonFromDb;
+        } else {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return getCatalogJsonFromDbWithRedisLock();
+        }
+    }
+
+    //从数据库中查询并封装
+    public Map<String, List<Catelog2Vo>> getCatalogJsonFromDb() {
+        String catalogJson = redisTemplate.opsForValue().get("catalogJson");
+        if (!StringUtils.isEmpty(catalogJson)) {
+            Map<String, List<Catelog2Vo>> result = JSON.parseObject(catalogJson,new TypeReference<Map<String, List<Catelog2Vo>>>(){});
+            return result;
+        }
+        return getData();
+
+    }
+
+    public Map<String, List<Catelog2Vo>> getData() {
         List<CategoryEntity> level1Categorys = getLevel1Categorys();
 
+        List<CategoryEntity> categoryList = baseMapper.selectList(null);
+
         Map<String, List<Catelog2Vo>> parent_cid = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
-            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<CategoryEntity> categoryEntities = getParent_cid(categoryList, v.getCatId());
             List<Catelog2Vo> catelog2Vos = null;
 
             if (categoryEntities != null) {
                 catelog2Vos = categoryEntities.stream().map(l2 -> {
                     Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
-                    List<CategoryEntity> level3Catalog = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", l2.getCatId()));
+                    List<CategoryEntity> level3Catalog = getParent_cid(categoryList,l2.getCatId());
                     if (level3Catalog != null) {
                         List<Catelog2Vo.Catelog3Vo> collect = level3Catalog.stream().map(l3 -> {
                             Catelog2Vo.Catelog3Vo catelog3Vo = new Catelog2Vo.Catelog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
@@ -105,10 +158,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                     return catelog2Vo;
                 }).collect(Collectors.toList());
             }
-
             return catelog2Vos;
         }));
-
+        redisTemplate.opsForValue().set("catalogJson", JSON.toJSONString(parent_cid));
         return parent_cid;
     }
 
@@ -133,6 +185,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         ).collect(Collectors.toList());
 
         return menus;
+    }
+
+    private static List<CategoryEntity> getParent_cid(List<CategoryEntity> categoryEntities,Long cid) {
+        return categoryEntities.stream().filter(item->item.getParentCid().equals(cid)).collect(Collectors.toList());
     }
 
 }
