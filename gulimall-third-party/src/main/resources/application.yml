@@ -4,11 +4,5 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
-    alicloud:
-      access-key: LTAI5t74WNa2Kiwf4mzjwrZN
-      secret-key: LWdZgOFQMggMsPO2hkmDjQSdTYaw1h
-      oss:
-        endpoint: oss-cn-nanjing.aliyuncs.com
-        bucket: gulimall-wsng
 server:
   port: 3000

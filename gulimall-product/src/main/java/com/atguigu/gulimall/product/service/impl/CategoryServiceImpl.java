@@ -14,7 +14,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.apache.commons.lang.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    RedissonClient redisson;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -85,8 +91,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
     }
 
+    @Cacheable("getLevel-1")
     @Override
     public List<CategoryEntity> getLevel1Categorys() {
+        System.out.println("getLevel1Categorys...");
         List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
         return categoryEntities;
     }
@@ -102,18 +110,31 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return result;
     }
 
+    public Map<String, List<Catelog2Vo>> getCatalogJsonFromDbWithRedissonLock() {
+        RLock lock = redisson.getLock("catalogJson-lock");
+        lock.lock();
+        Map<String, List<Catelog2Vo>> dataFromDb;
+        try {
+            dataFromDb = getDataFromDb();
+        } finally {
+            lock.unlock();
+       }
+        return dataFromDb;
+    }
+
+
     public Map<String, List<Catelog2Vo>> getCatalogJsonFromDbWithRedisLock() {
         String uuid = UUID.randomUUID().toString();
         Boolean aBoolean = redisTemplate.opsForValue().setIfAbsent("lock", uuid,300,TimeUnit.SECONDS);
         if (aBoolean) {
-            Map<String, List<Catelog2Vo>> catalogJsonFromDb;
+            Map<String, List<Catelog2Vo>> dataFromDb;
             try {
-                catalogJsonFromDb = getCatalogJsonFromDb();
+                dataFromDb = getDataFromDb();
             } finally {
                 String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
                 redisTemplate.execute(new DefaultRedisScript<Long>(script, Long.class), Arrays.asList("lock"), uuid);
             }
-            return catalogJsonFromDb;
+            return dataFromDb;
         } else {
             try {
                 Thread.sleep(200);
@@ -125,14 +146,13 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     //从数据库中查询并封装
-    public Map<String, List<Catelog2Vo>> getCatalogJsonFromDb() {
+    public Map<String, List<Catelog2Vo>> getDataFromDb() {
         String catalogJson = redisTemplate.opsForValue().get("catalogJson");
         if (!StringUtils.isEmpty(catalogJson)) {
             Map<String, List<Catelog2Vo>> result = JSON.parseObject(catalogJson,new TypeReference<Map<String, List<Catelog2Vo>>>(){});
             return result;
         }
         return getData();
-
     }
 
     public Map<String, List<Catelog2Vo>> getData() {
