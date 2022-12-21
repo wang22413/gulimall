@@ -17,7 +17,9 @@ import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -85,13 +87,19 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
      * 级联更新所有关联的数据
      * @param category
      */
+
+//    @Caching(evict = {
+//            @CacheEvict(value = "getLevel", key = "'getLevel1Categorys'"),
+//            @CacheEvict(value = "getLevel", key = "'getCatalogJson'")
+//    })
+    @CacheEvict(value = "getLevel", allEntries = true)
     @Override
     public void updateCascade(CategoryEntity category) {
         this.updateById(category);
         categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
     }
 
-    @Cacheable("getLevel-1")
+    @Cacheable(value = "getLevel", key = "#root.method.name", sync = true)
     @Override
     public List<CategoryEntity> getLevel1Categorys() {
         System.out.println("getLevel1Categorys...");
@@ -99,8 +107,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return categoryEntities;
     }
 
+    @Cacheable(value = "getLevel", key = "#root.methodName", sync = true)
     @Override
     public Map<String, List<Catelog2Vo>> getCatalogJson() {
+        Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDbWithRedisLock();
+        return catalogJsonFromDb;
+    }
+
+    public Map<String, List<Catelog2Vo>> getCatalogJson1() {
         String catalogJson = redisTemplate.opsForValue().get("catalogJson");
         if (StringUtils.isEmpty(catalogJson)) {
             Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDbWithRedisLock();
@@ -180,7 +194,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             }
             return catelog2Vos;
         }));
-        redisTemplate.opsForValue().set("catalogJson", JSON.toJSONString(parent_cid));
         return parent_cid;
     }
 
