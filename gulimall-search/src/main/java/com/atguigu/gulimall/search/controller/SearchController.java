@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * @author Mrwsn
@@ -20,7 +19,7 @@ public class SearchController {
     MallSearchService mallSearchService;
 
     @GetMapping("/list.html")
-    public String listPage(@RequestBody SearchParam searchParam, Model model) {
+    public String listPage(SearchParam searchParam, Model model) {
 
         SearchResult result = mallSearchService.search(searchParam);
         model.addAttribute("result",result);
