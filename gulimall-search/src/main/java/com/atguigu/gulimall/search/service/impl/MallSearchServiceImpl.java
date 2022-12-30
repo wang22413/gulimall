@@ -116,6 +116,7 @@ public class MallSearchServiceImpl implements MallSearchService {
                     rangeQuery.gte(s[0]);
                 }
             }
+            boolQuery.filter(rangeQuery);
         }
 
         sourceBuilder.query(boolQuery);
@@ -265,6 +266,12 @@ public class MallSearchServiceImpl implements MallSearchService {
         int totalPages = (int) total % EsConstant.PRODUCT_PAGESIZE == 0 ? (int) total / EsConstant.PRODUCT_PAGESIZE : ((int) total / EsConstant.PRODUCT_PAGESIZE + 1);
         result.setTotalPages(totalPages);
         result.setPageNum(param.getPageNum());
+
+        List<Integer> pageNavs = new ArrayList<>();
+        for (int i=1;i<=totalPages;i++) {
+            pageNavs.add(i);
+        }
+        result.setPageNavs(pageNavs);
 
         return result;
     }

@@ -402,8 +402,8 @@
         <a href="http://gulimall.com"><img src="static/search/image/logo1.jpg" alt=""></a>
     </div>
     <div class="header_form">
-        <input type="text" placeholder="手机" />
-        <a href="static/search/#">搜索</a>
+        <input id="keyword_input" type="text" placeholder="手机" th:value="${param.keyword}"/>
+        <a href="javascript:searchByKeyword()">搜索</a>
     </div>
     <div class="header_ico">
         <div class="header_gw">
@@ -785,7 +785,7 @@
                         <div class="sl_value_logo">
                             <ul>
                                 <li th:each="brand:${result.brands}">
-                                    <a href="static/search/#">
+                                    <a href="static/search/#" th:href="${'javascript:searchProduct(&quot;brandId&quot,'+brand.brandId+')'}">
                                         <img th:src="${brand.brandImg}" alt="">
                                         <div th:text="${brand.brandName}">
                                             华为(HUAWEI)
@@ -816,7 +816,10 @@
                     </div>
                     <div class="sl_value">
                         <ul>
-                            <li th:each="catalog:${result.catalogs}"><a href="static/search/#" th:text="${catalog.catalogName}">5.56英寸及以上</a></li>
+                            <li th:each="catalog:${result.catalogs}">
+                                <a th:href="${'javascript:searchProduct(&quot;catalog3Id&quot,'+catalog.catalogId+')'}"
+                                th:text="${catalog.catalogName}">5.56英寸及以上</a>
+                            </li>
                         </ul>
                     </div>
                     <div class="sl_ext">
@@ -840,7 +843,9 @@
                     </div>
                     <div class="sl_value">
                         <ul>
-                            <li th:each="val:${attr.attrValue}"><a href="static/search/#" th:text="${val}">5.56英寸及以上</a></li>
+                            <li th:each="val:${attr.attrValue}">
+                                <a th:href="${'javascript:searchProduct(&quot;attrs&quot,&quot'+attr.attrId+'_'+val+'&quot)'}"
+                                   th:text="${val}">5.56英寸及以上</a></li>
                         </ul>
                     </div>
                 </div>
@@ -1020,12 +1025,15 @@
                 <div class="filter">
                     <!--综合排序-->
                     <div class="filter_top">
-                        <div class="filter_top_left">
-                            <a href="static/search/#">综合排序</a>
-                            <a href="static/search/#">销量</a>
-                            <a href="static/search/#">价格</a>
-                            <a href="static/search/#">评论分</a>
-                            <a href="static/search/#">上架时间</a>
+                        <div class="filter_top_left" th:with="priceRange = ${param.skuPrice}">
+                            <a class="sort_a" sort="hotScore" href="static/search/#">综合排序</a>
+                            <a class="sort_a" sort="saleCount" href="static/search/#">销量</a>
+                            <a class="sort_a" sort="skuPrice" href="static/search/#">价格</a>
+                            <a class="sort_a" href="static/search/#">评论分</a>
+                            <a class="sort_a" href="static/search/#">上架时间</a>
+                            <input id="skuPriceFrom" type="number" style="width: 100px;margin-left: 30px" th:value="${#strings.isEmpty(priceRange)?'':#strings.substringBefore(priceRange,'_')}"> -
+                            <input id="skuPriceTo" type="number" style="width: 100px;" th:value="${#strings.isEmpty(priceRange)?'':#strings.substringAfter(priceRange,'_')}">
+                            <button id="skyPriceSearchBth">确定</button>
                         </div>
                         <div class="filter_top_right">
                             <span class="fp-text">
@@ -1133,8 +1141,8 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="static/search/#">
-                                        <i></i>
+                                    <a th:with="check=${param.hasStock}">
+                                        <input id="showHasStock" type="checkbox" th:checked="${#strings.equals(check,'1')}">
                                         仅显示有货
                                     </a>
                                 </li>
@@ -1194,23 +1202,22 @@
                     <div class="filter_page">
                         <div class="page_wrap">
                             <span class="page_span1">
-                                <a href="static/search/#">
+                                <a class="page_a" th:attr="pn=${result.pageNum - 1}" th:if="${result.pageNum>1}">
                                     < 上一页
                                 </a>
-                                <a href="static/search/#" style="border: 0;color:#ee2222;background: #fff">1</a>
-                                <a href="static/search/#">2</a>
-                                <a href="static/search/#">3</a>
-                                <a href="static/search/#" style="border: 0;font-size: 20px;color: #999;background: #fff">...</a>
-                                <a href="static/search/#">169</a>
-                                <a href="static/search/#">
+                                <a class="page_a" style="border: 0;color:#ee2222;background: #fff"
+                                    th:each="nav:${result.pageNavs}"
+                                   th:attr="pn=${nav},style=${nav == result.pageNum?'border: 0;color:#ee2222;background: #fff':''}"
+                                    >[[${nav}]]</a>
+                                <a class="page_a" th:attr="pn=${result.pageNum + 1}" th:if="${result.pageNum<result.totalPages}">
                                     下一页 >
                                 </a>
                             </span>
                             <span class="page_span2">
-                                <em>共<b>169</b>页&nbsp;&nbsp;到第</em>
+                                <em>共<b>[[${result.totalPages}]]</b>页&nbsp;&nbsp;到第</em>
                                 <input type="number" value="1">
                                 <em>页</em>
-                                <a href="static/search/#">确定</a>
+                                <a class="page_submit">确定</a>
                             </span>
                         </div>
                     </div>
@@ -1954,6 +1961,91 @@
     },function(){
         $(this).css("color","#727272")
     })
+
+    function searchProduct(name,value) {
+        location.href = replaceAndAddParamVal(location.href,name,value);
+    }
+
+    function searchByKeyword() {
+        searchProduct("keyword",$("#keyword_input").val());
+    }
+
+    $(".page_a").click(function (){
+        var pn = $(this).attr("pn");
+
+        var href = location.href;
+        if (href.indexOf("pageNum")!=-1) {
+            location.href = replaceAndAddParamVal(href,"pageNum",pn);
+        } else {
+            location.href = location.href + "&pageNum=" + pn;
+        }
+        return false;
+    });
+
+    function replaceAndAddParamVal(url,paramName,replaceVal) {
+        var oUrl = url.toString();
+        if (oUrl.indexOf(paramName)!=-1) {
+            var re=eval('/(' + paramName + '=)([^&]*)/gi');
+            var nUrl = oUrl.replace(re,paramName+'='+replaceVal);
+            return nUrl;
+        } else {
+            var nUrl = "";
+            if (oUrl.indexOf("?")!=-1) {
+                nUrl = oUrl + "&" + paramName + "=" + replaceVal;
+            } else {
+                nUrl = oUrl + "?" + paramName + "=" + replaceVal;
+            }
+            return nUrl;
+        }
+    }
+
+
+    $(".sort_a").click(function (){
+        changeStyle(this);
+        var sort = $(this).attr("sort");
+        sort = $(this).hasClass("desc")?sort+"_desc":sort+"_asc";
+        location.href = replaceAndAddParamVal(location.href,"sort",sort);
+        return false;
+    });
+
+    function changeStyle(ele) {
+        $(".sort_a").css({"color":"#333","border-color":"#CCC","background":"#FFF"});
+        $(".sort_a").each(function (){
+            var text = $(this).text().replace("↓","").replace("↑","")
+            $(this).text(text);
+        });
+        $(ele).css({"color":"#FFF","border-color":"#e4393c","background":"#e4393c"});
+
+        $(ele).toggleClass("desc");
+        if ($(ele).hasClass("desc")) {
+            var text = $(ele).text().replace("↓","").replace("↑","")
+            text = text + "↓";
+            $(ele).text(text);
+        } else {
+            var text = $(ele).text().replace("↓","").replace("↑","")
+            text = text + "↑";
+            $(ele).text(text);
+        }
+    }
+
+    $("#skyPriceSearchBth").click(function (){
+        var from = $("#skuPriceFrom").val();
+        var to = $("#skuPriceTo").val();
+
+        var query = from + "_" + to;
+        location.href = replaceAndAddParamVal(location.href,"skuPrice",query)
+    });
+
+    $("#showHasStock").change(function (){
+       if ($(this).prop('checked')) {
+           location.href =replaceAndAddParamVal(location.href,"hasStock",1);
+       } else {
+           var re=eval('/(&hasStock=)([^&]*)/gi');
+           location.href = (location.href + "").replace(re,'');
+       }
+       return false;
+    });
+
 </script>
 </body>
 </html>
