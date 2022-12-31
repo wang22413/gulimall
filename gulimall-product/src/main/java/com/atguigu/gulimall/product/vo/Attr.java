@@ -35,4 +35,12 @@ public class Attr {
          return attrValue;
      }
 
+    @Override
+    public String toString() {
+        return "Attr{" +
+                "attrId=" + attrId +
+                ", attrName='" + attrName + '\'' +
+                ", attrValue='" + attrValue + '\'' +
+                '}';
+    }
 }
