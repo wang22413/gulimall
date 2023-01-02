@@ -4,5 +4,12 @@ spring:
   cloud:
     nacos:
       server-addr: 127.0.0.1:8848
+    alicloud:
+      sms:
+        host: https://dfsns.market.alicloudapi.com
+        path: /data/send_sms
+        content_type: application/x-www-form-urlencoded; charset=UTF-8
+        template_id: TPL_0000
+        appcode: e0d1bf5781bc4eef9d1af65e250e459f
 server:
   port: 3000
