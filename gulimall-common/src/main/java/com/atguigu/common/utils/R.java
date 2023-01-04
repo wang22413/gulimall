@@ -39,6 +39,13 @@ public class R extends HashMap<String, Object> {
 		return t;
 	}
 
+	public <T> T getData(String key, TypeReference<T> tTypeReference) {
+		Object data = get(key);
+		String s = JSON.toJSONString(data);
+		T t = JSON.parseObject(s, tTypeReference);
+		return t;
+	}
+
 	public static R error() {
 		return error(HttpStatus.SC_INTERNAL_SERVER_ERROR, "未知异常，请联系管理员");
 	}
