@@ -3,6 +3,7 @@ package com.atguigu.gulimall.thirdparty;
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSException;
+import com.atguigu.common.utils.HttpUtils;
 import com.atguigu.gulimall.thirdparty.component.SmsComponent;
 import org.apache.http.HttpResponse;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ class GulimallThirdPartyApplicationTests {
 
 
         try {
-            HttpResponse response = com.aliyun.api.gateway.demo.util.HttpUtils.doPost(host, path, method, headers, querys, bodys);
+            HttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);
             System.out.println(response.toString());
             //获取response的body
             //System.out.println(EntityUtils.toString(response.getEntity()));

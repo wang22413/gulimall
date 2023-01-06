@@ -1,4 +1,4 @@
-package com.atguigu.gulimall.thirdparty.ccontroller;
+package com.atguigu.gulimall.thirdparty.controller;
 
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.thirdparty.component.SmsComponent;

@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.thirdparty.component;
 
+import com.atguigu.common.utils.HttpUtils;
 import lombok.Data;
 import org.apache.http.HttpResponse;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -36,7 +37,7 @@ public class SmsComponent {
         bodys.put("template_id", template_id);
 
         try {
-            HttpResponse response = com.aliyun.api.gateway.demo.util.HttpUtils.doPost(host, path, method, headers, querys, bodys);
+            HttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);
             System.out.println(response.toString());
             //获取response的body
             //System.out.println(EntityUtils.toString(response.getEntity()));

@@ -10,6 +10,7 @@ import com.atguigu.gulimall.member.feign.CouponFeignService;
 import com.atguigu.gulimall.member.service.MemberService;
 import com.atguigu.gulimall.member.vo.MemberLoginVo;
 import com.atguigu.gulimall.member.vo.MemberRegistVo;
+import com.atguigu.gulimall.member.vo.SocialUserVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +45,17 @@ public class MemberController {
         return R.ok().put("member",membercoupons).put("coupon",membercoupons.get("coupons"));
     }
 
+    @PostMapping("/oauth/login")
+    public R oauthLogin(@RequestBody SocialUserVo vo) throws Exception {
+        MemberEntity member = memberService.login(vo);
+        if (member != null) {
+            return R.ok().setData(member);
+        }else {
+            return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),
+                    BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());
+        }
+    }
+
     @PostMapping("/login")
     public R login(@RequestBody MemberLoginVo vo) {
         MemberEntity member = memberService.login(vo);
@@ -53,7 +65,6 @@ public class MemberController {
             return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),
                     BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());
         }
-
     }
 
     @PostMapping("/regist")
