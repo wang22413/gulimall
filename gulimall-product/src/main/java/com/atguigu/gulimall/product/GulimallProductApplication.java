@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
+
 /**
  * 1、整合MyBatis-Plus
  *      1）、导入依赖
@@ -52,6 +54,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *  1）、编写异常处理类，使用@ControllerAdvice。
  *  2）、使用@ExceptionHandler标注方法可以处理的异常。
  */
+@EnableRedisHttpSession
 @EnableFeignClients("com.atguigu.gulimall.product.feign")
 @EnableDiscoveryClient
 @MapperScan("com/atguigu/gulimall/product/dao")

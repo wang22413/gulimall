@@ -5,7 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.utils.HttpUtils;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.auth.feign.MemberFeignService;
-import com.atguigu.gulimall.auth.vo.MemberRespVo;
+import com.atguigu.common.vo.MemberRespVo;
 import com.atguigu.gulimall.auth.vo.SocialUserVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
@@ -44,8 +44,8 @@ public class OAuth2Controller {
         //1、工具code换取accessToken
         HttpResponse response = HttpUtils
                 .doPost("https://api.weibo.com","/oauth2/access_token","post",header,query,map);
-//        2、处理
-         if (response.getStatusLine().getStatusCode() == 200) {
+        //2、处理
+        if (response.getStatusLine().getStatusCode() == 200) {
              String json = EntityUtils.toString(response.getEntity());
              SocialUserVo socialUser = JSON.parseObject(json, SocialUserVo.class);
              R oauthLogin = memberFeignService.oauthLogin(socialUser);
@@ -57,9 +57,9 @@ public class OAuth2Controller {
              }else {
                  return "redirect:http://auth.gulimall.com/login.html";
              }
-         }else {
+        }else {
              return "redirect:http://auth.gulimall.com/login.html";
-         }
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-package com.atguigu.gulimall.auth.vo;
+package com.atguigu.common.vo;
 
 import lombok.Data;
 import lombok.ToString;
