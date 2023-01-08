@@ -12,7 +12,7 @@
     <artifactId>gulimall-product</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gulimall-product</name>
-    <description>gulimall-product</description>
+    <description>商品服务</description>
     <properties>
         <java.version>8</java.version>
         <spring-cloud.version>Hoxton.SR8</spring-cloud.version>

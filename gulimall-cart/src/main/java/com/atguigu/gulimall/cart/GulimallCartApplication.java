@@ -1,18 +1,18 @@
-package com.atguigu.gulimall.search;
+package com.atguigu.gulimall.cart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@EnableRedisHttpSession
+@EnableFeignClients
 @EnableDiscoveryClient
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-public class GulimallSearchApplication {
+public class GulimallCartApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(GulimallSearchApplication.class, args);
+        SpringApplication.run(GulimallCartApplication.class, args);
     }
 
 }

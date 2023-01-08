@@ -12,7 +12,7 @@
     <artifactId>gulimall-search</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gulimall-search</name>
-    <description>gulimall-search</description>
+    <description>检索服务</description>
     <properties>
         <java.version>8</java.version>
         <elasticsearch.version>7.4.2</elasticsearch.version>
@@ -55,6 +55,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
     </dependencies>
