@@ -22,6 +22,19 @@ public class CartController {
     @Autowired
     CartService cartService;
 
+    @GetMapping("/deleteItem")
+    public String deleteItem(@RequestParam("skuId") Long skuId) {
+        cartService.deleteItem(skuId);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
+    @GetMapping("/countItem")
+    public String countItem(@RequestParam("skuId") Long skuId,
+                            @RequestParam("num") Integer num) {
+        cartService.countItem(skuId, num);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
     @GetMapping("/checkItem")
     public String checkItem(@RequestParam("skuId") Long skuId,
                             @RequestParam("check") Integer check,
