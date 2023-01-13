@@ -10,7 +10,7 @@ import java.util.List;
  * @author Mrwsn
  * @createTime 2023/1/12 22:36
  */
-@FeignClient("")
+@FeignClient("gulimall-cart")
 public interface CartFeignService {
 
     @GetMapping("/currentUserCartItems")

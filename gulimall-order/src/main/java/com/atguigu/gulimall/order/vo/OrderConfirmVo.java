@@ -1,11 +1,11 @@
 package com.atguigu.gulimall.order.vo;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Mrwsn
@@ -30,13 +30,26 @@ public class OrderConfirmVo {
     @Getter @Setter
     String orderToken;
 
+    @Getter @Setter
+    Map<Long,Boolean> stocks;
+
+    public Integer getCount() {
+        Integer i = 0;
+        if (items != null) {
+            for (OrderItemVo item : items) {
+                i += item.getCount();
+            }
+        }
+        return i;
+    }
+
 //    BigDecimal total;//订单总额
     public BigDecimal getTotal() {
         BigDecimal sum = new BigDecimal("0");
         if (items != null) {
             for (OrderItemVo item : items) {
                 BigDecimal multiply = item.getPrice().multiply(new BigDecimal(item.getCount().toString()));
-                sum.add(multiply);
+                 sum = sum.add(multiply);
             }
         }
         return sum;
@@ -44,13 +57,6 @@ public class OrderConfirmVo {
 
 //    BigDecimal payPrice;//应付价格
     public BigDecimal getPayPrice() {
-        BigDecimal sum = new BigDecimal("0");
-        if (items != null) {
-            for (OrderItemVo item : items) {
-                BigDecimal multiply = item.getPrice().multiply(new BigDecimal(item.getCount().toString()));
-                sum.add(multiply);
-            }
-        }
-        return sum;
+        return getTotal();
     }
 }

@@ -20,4 +20,8 @@ public class OrderItemVo {
     private Integer count;
     private BigDecimal totalPrice;
 
+    // TODO 查询商品状态 重量
+    private Boolean hasStock = true;
+    private BigDecimal weight;
+
 }

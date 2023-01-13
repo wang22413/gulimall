@@ -15,6 +15,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 public class WareMyBatisConfig {
 
+    /**
+     * redis分页设置
+     * @return
+     */
     @Bean
     public PaginationInnerInterceptor paginationInnerInterceptor() {
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
