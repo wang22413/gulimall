@@ -145,7 +145,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         //获取所有的订单项
         List<OrderItemVo> orderItemVos = buildOrderItems();
 
-
         return createTo;
     }
 
