@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 /**
@@ -13,7 +14,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
  * 2、给容器中自动配置了
  *      RabbitTemplate、AmqpAdmin、CachingConnectionFactory、RabbitMessagingTemplate
  */
-
+@EnableAspectJAutoProxy(exposeProxy = true)
 @Enabled
 @EnableRabbit
 @EnableFeignClients
