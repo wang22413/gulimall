@@ -33,7 +33,7 @@ public class WareSkuController {
     @PostMapping("/lock/order")
     public R orderLockStock(@RequestBody WareSkuLockVo vo) {
         try {
-            Boolean stock = wareSkuService.orderLockStock(vo);
+            wareSkuService.orderLockStock(vo);
             return R.ok();
         }catch (NoStockException e) {
             return R.error(BizCodeEnum.NO_STOCK_EXCEPTION.getCode(),BizCodeEnum.NO_STOCK_EXCEPTION.getMsg())
