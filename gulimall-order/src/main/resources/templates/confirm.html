@@ -724,7 +724,7 @@
 				<p class="yfze_b">寄送至：<span id="recieveAddressEle"></span> 收货人：<span id="recieveEle"></span></p>
 			</div>
 			<form action="http://order.gulimall.com/submitOrder" method="post">
-				<input id="addrIdInput" type="hidden" name="addrId">
+				<input id="addrIdInput" type="hidden" name="addrId">formatDecimal
 				<input id="payPriceInput" type="hidden" name="payPrice">
 				<input type="hidden" name="orderToken" th:value="${orderConfirmData.orderToken}">
 				<button class="tijiao" type="submit">提交订单</button>
