@@ -23,7 +23,7 @@ public class AlipayTemplate {
     private  String alipay_public_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtbqWsDWqQwSkVdAH4YE5TuiZWbnJ4MkM4oRRscZnplM66BQYvlkRqemlt4g5ZkfeWy23KD7cVchXwXQm6W5uhIpRLhsohu9UWRNbjLHjUR8j3PrANsPiGhHmgia7wqoeA/ejLSzxWqgFKEUKZMOeUDcaws701xyHH58cP4t7L/+St33Yo4Uka5X92lS5kgbxNyUu2/fGhLFFpuhu7hLh9nfQTxutJdFtwTQC8oOejkMBUBSzp6PO+vyysjKkkBgvqgp+54uFSFqfMafFMlaNu/ndqdrKHhXEvEF1PcEu5Up96HVkJd+VwcWj4/A/26ulmsRHcAKOyMjjo/y8ZRhd1QIDAQAB";
     // 服务器[异步通知]页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     // 支付宝会悄悄的给我们发送一个请求，告诉我们支付成功的信息
-    private  String notify_url = "http://pik8an.natappfree.cc/alipay.trade.page.pay-JAVA_UTF-8/notify_url.jsp";
+    private  String notify_url = "http://pik8an.natappfree.cc/payed/notify";
 
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     //同步通知，支付成功，一般跳转到成功页
@@ -37,6 +37,8 @@ public class AlipayTemplate {
 
     // 支付宝网关； https://openapi.alipaydev.com/gateway.do
     private  String gatewayUrl = "https://openapi.alipaydev.com/gateway.do";
+
+    private String timeout = "30m";
 
     public  String pay(PayVo vo) throws AlipayApiException {
 
@@ -64,6 +66,7 @@ public class AlipayTemplate {
                 + "\"total_amount\":\""+ total_amount +"\","
                 + "\"subject\":\""+ subject +"\","
                 + "\"body\":\""+ body +"\","
+                + "\"timeout_express\":\""+timeout+"\","
                 + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
 
         String result = alipayClient.pageExecute(alipayRequest).getBody();
