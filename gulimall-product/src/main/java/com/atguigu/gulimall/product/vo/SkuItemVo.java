@@ -28,4 +28,6 @@ public class SkuItemVo {
 
     List<SpuItemAttrGroupVo> groupAttrs;
 
+    SeckillInfoVo seckillInfo;
+
 }
