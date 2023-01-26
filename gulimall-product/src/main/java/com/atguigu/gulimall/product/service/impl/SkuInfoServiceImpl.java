@@ -97,9 +97,7 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
                     wrapper.le("price",max);
                 }
             } catch(Exception e) {
-
             }
-
         }
 
         IPage<SkuInfoEntity> page = this.page(
@@ -161,7 +159,6 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
                 skuItemVo.setSeckillInfo(seckillVo);
             }
         }, executor);
-
 
         CompletableFuture.allOf(saleAttrFuture,descFuture,baseAttrFuture,imageFuture,seckillFuture).get();
 

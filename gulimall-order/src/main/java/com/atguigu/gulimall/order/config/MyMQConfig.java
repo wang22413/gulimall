@@ -59,12 +59,29 @@ public class MyMQConfig {
                 "order.release.order",null);
     }
 
+    /**
+     * 订单释放和库存释放进行绑定
+     * @return
+     */
     @Bean
     public Binding orderReleaseOtherBinding() {
         return new Binding("stock.release.stock.queue",
                 Binding.DestinationType.QUEUE,
                 "order-event-exchange",
                 "order.release.other.#",null);
+    }
+
+    @Bean
+    public Queue orderSeckillOrderQueue() {
+        return new Queue("stock.seckill.order.queue",true,false,false);
+    }
+
+    @Bean
+    public Binding orderSeckillOrderQueueBinding() {
+        return new Binding("stock.seckill.order.queue",
+                Binding.DestinationType.QUEUE,
+                "order-event-exchange",
+                "order.seckill.order",null);
     }
 
 }

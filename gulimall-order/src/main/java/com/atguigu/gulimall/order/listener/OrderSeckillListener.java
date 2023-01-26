@@ -1,8 +1,9 @@
 package com.atguigu.gulimall.order.listener;
 
-import com.atguigu.gulimall.order.entity.OrderEntity;
+import com.atguigu.common.to.mq.SeckillOrderTo;
 import com.atguigu.gulimall.order.service.OrderService;
 import com.rabbitmq.client.Channel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -13,20 +14,21 @@ import java.io.IOException;
 
 /**
  * @author Mrwsn
- * @createTime 2023/1/19 21:24
+ * @createTime 2023/1/26 21:35
  */
+@Slf4j
+@RabbitListener(queues = "stock.seckill.order.queue")
 @Service
-@RabbitListener(queues = "order.release.order.queue")
-public class OrderCloseListener {
+public class OrderSeckillListener {
 
     @Autowired
     OrderService orderService;
 
     @RabbitHandler
-    public void listener(OrderEntity entity, Channel channel, Message message) throws IOException {
-        System.out.println("收到过期的订单信息：" + entity.getOrderSn());
+    public void listener(SeckillOrderTo seckillOrder, Channel channel, Message message) throws IOException {
         try {
-            orderService.closeOrder(entity);
+            log.info("秒杀订单");
+            orderService.createSeckillOrder(seckillOrder);
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         }catch (Exception e) {
             channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);

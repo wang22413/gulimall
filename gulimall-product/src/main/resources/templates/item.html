@@ -58,7 +58,7 @@
 						</ul>
 						<ul class="header_ul_right">
 							<li style="border: 0;">
-								<a href="http://auth:gulimall.com/login.html" th:if="${session.loginUser==null}" class="aa">你好，请登录</a>
+								<a href="http://auth.gulimall.com/login.html" th:if="${session.loginUser==null}" class="aa">你好，请登录</a>
 								<a th:if="${session.loginUser!=null}" style="width: 100px" class="aa">[[${session.loginUser.nickname}]]</a>
 							</li>
 							<li th:if="${session.loginUser==null}"><a href="http://auth:gulimall.com/reg.html" style="color: red;">免费注册</a> |</li>
@@ -635,8 +635,15 @@
 
 								</div>
 							</div>
-							<div class="box-btns-two">
-								<a href="#" id="addToCart" th:attr="skuId=${item.info.skuId}">
+							<div class="box-btns-two"
+								 th:if="${#dates.createNow().getTime() >= item.seckillInfo.startTime && #dates.createNow().getTime() <= item.seckillInfo.endTime}">
+								<a href="#" id="secKillA" th:attr="skuId=${item.info.skuId},sessionId=${item.seckillInfo.promotionSessionId},code=${item.seckillInfo.randomCode}">
+									立即抢购
+								</a>
+							</div>
+							<div class="box-btns-two"
+								 th:if="${#dates.createNow().getTime() < item.seckillInfo.startTime || #dates.createNow().getTime() > item.seckillInfo.endTime}">
+								<a href="#" id="addToCartA" th:attr="skuId=${item.info.skuId}">
 									加入购物车
 								</a>
 							</div>
@@ -1305,10 +1312,23 @@
 		$("a[class='sku_attr_value checked']").parent().css({"border":"solid 1px red"});
 	});
 
-	$("#addToCart").click(function (){
+	$("#addToCartA").click(function (){
 		let num = $("#numInput").val();
 		let skuId = $(this).attr("skuId");
 		location.href = "http://cart.gulimall.com/addToCart?skuId=" + skuId + "&num=" + num;
+		return false;
+	});
+
+	$("#secKillA").click(function () {
+		var isLogin = [[${session.loginUser!=null}]];
+		if (isLogin) {
+			var killId = $(this).attr("sessionId") + "_" + $(this).attr("skuId");
+			var key = $(this).attr("code");
+			var num = $("#numInput").val();
+			location.href = "http://seckill.gulimall.com/kill?killId=" + killId + "&key=" + key + "&num=" + num;
+		}else {
+			alert("请先登录");
+		}
 		return false;
 	});
 </script>
