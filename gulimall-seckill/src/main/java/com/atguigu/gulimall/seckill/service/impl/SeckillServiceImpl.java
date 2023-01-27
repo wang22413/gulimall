@@ -99,6 +99,8 @@ public class SeckillServiceImpl implements SeckillService {
         return null;
     }
 
+    // TODO 上架秒杀商品的时候，每一个数据都有过期时间
+    // TODO 秒杀后续的流程，简化了收货地址等信息。
     @Override
     public SeckillSkuRedisTo getSkuSeckillInfo(Long skuId) {
         //找到所有需要秒杀的key
